@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Plan Generator</title>
+</head>
+<body>
+
+    <h1>Generate Your Study Plan</h1>
+    
+<div>
+    <label for="subject">Subject:</label>
+    <input type="text" id="subject" placeholder="Enter subject (e.g., Physics)" required>
+    
+    <label for="hours_per_day">Hours Per Day:</label>
+    <input type="number" id="hours_per_day" placeholder="Enter hours per day" required>
+    
+    <label for="duration">Duration (Days):</label>
+    <input type="number" id="duration" placeholder="Enter number of days" required>
+    
+    <label for="learning_style">Learning Style:</label>
+    <select id="learning_style">
+        <option value="visual">Visual</option>
+        <option value="auditory">Auditory</option>
+        <option value="kinesthetic">Kinesthetic</option>
+    </select>
+    
+    <label for="difficulty">Difficulty:</label>
+    <select id="difficulty">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+    </select>
+
+    <button id="generatePlan">Generate Study Plan</button>
+</div>
+
+<div id="studyPlan"></div>
+
+
+    <script>
+    async function fetchStudyPlan() {
+        // ✅ Get values from user input
+        const subject = document.getElementById("subject").value;
+        const hours_per_day = document.getElementById("hours_per_day").value;
+        const duration = document.getElementById("duration").value;
+        const learning_style = document.getElementById("learning_style").value;
+        const difficulty = document.getElementById("difficulty").value;
+
+        // ✅ Check if inputs are empty
+        if (!subject || !hours_per_day || !duration) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        // ✅ Send API request
+        const response = await fetch("http://127.0.0.1:5000/generate-study-plan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "subject": subject,
+                "hours_per_day": parseInt(hours_per_day),
+                "duration": parseInt(duration),
+                "learning_style": learning_style,
+                "difficulty": difficulty
+            })
+        });
+
+        const data = await response.json();
+        console.log("📌 API Response:", data); // ✅ Log API response
+
+        const studyPlanDiv = document.getElementById("studyPlan");
+        studyPlanDiv.innerHTML = ""; // Clear previous results
+
+        // ✅ Ensure the response is an array
+        if (!Array.isArray(data)) {
+            console.error("⚠️ Unexpected API response format. Expected an array.");
+            studyPlanDiv.innerHTML = `<p style="color: red;">⚠️ API returned an unexpected format.</p>`;
+            return;
+        }
+
+        // ✅ Loop through the study plan data
+        data.forEach(day => {
+            let html = `<h3>${day.day}: ${day.topic} (${day.hours} hours)</h3>`;
+            html += `<h4>📌 Key Points</h4><ul>`;
+
+            // ✅ Display key points
+            if (Array.isArray(day["key points"]) && day["key points"].length > 0) {
+                day["key points"].forEach(point => {
+                    html += `<li>✅ ${point}</li>`;
+                });
+            } else {
+                html += `<li>⚠️ No key points available.</li>`;
+            }
+
+            html += `</ul><h4>📚 Recommended Resources</h4><ul>`;
+
+            // ✅ Check if recommended resources exist
+            if (Array.isArray(day["recommended resources"]) && day["recommended resources"].length > 0) {
+                day["recommended resources"].forEach(resource => {
+                    html += `<li>🔗 <b>${resource.type}:</b> 
+                             <a href="${resource.link}" target="_blank">${resource.title}</a></li>`;
+                });
+            } else {
+                html += `<li>⚠️ No resources available.</li>`;
+            }
+
+            html += `</ul>`;
+
+            // ✅ Display Learning Pods
+            if (Array.isArray(day.learning_pods) && day.learning_pods.length > 0) {
+                html += `<h4>🎯 Learning Pods</h4><ul>`;
+                day.learning_pods.forEach(pod => {
+                    html += `<li><b>📌 Pod ${pod.pod_number}:</b> ${pod.pod_topic} (${pod.duration_minutes} min)</li>`;
+                    
+                    // ✅ Display key points inside the pod
+                    if (pod.key_points.length > 0) {
+                        html += `<ul>`;
+                        pod.key_points.forEach(keyPoint => {
+                            html += `<li>📖 ${keyPoint}</li>`;
+                        });
+                        html += `</ul>`;
+                    }
+
+                    // ✅ Display pod resources
+                    if (pod.resources.length > 0) {
+                        html += `<h5>📚 Pod Resources</h5><ul>`;
+                        pod.resources.forEach(resource => {
+                            html += `<li>🔗 <b>${resource.type}:</b> 
+                                     <a href="${resource.link}" target="_blank">${resource.title}</a></li>`;
+                        });
+                        html += `</ul>`;
+                    }
+                });
+                html += `</ul>`;
+            } else {
+                console.warn(`⚠️ No learning pods found for ${day.topic}`);
+                html += `<p>⚠️ No learning pods available.</p>`;
+            }
+
+            studyPlanDiv.innerHTML += html;
+        });
+    }
+
+    // ✅ Attach function to button click
+    document.getElementById("generatePlan").addEventListener("click", fetchStudyPlan);
+
+</script>
+
+</body>
+</html>
