@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/studyplan")
 @CrossOrigin(origins = "*") // ✅ Enable CORS for frontend calls
-public class StudyPlanController {
+public class ScheduleController {
 
     @Autowired
     private StudyPlanService studyPlanService;
