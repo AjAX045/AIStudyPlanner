@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Planner</title>
+    <link rel="stylesheet" href="display2.css">
+</head>
+<body>
+     <!-- 🔹 Header Section -->
+    <header class="header">
+  
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>📚 Smart Study Planner</h1>
+
+        <!-- User Input Section -->
+        <div class="input-section">
+            <label for="subjectName">Enter Subject Name:</label>
+            <input type="text" id="subjectName" placeholder="E.g.Math,Physics,etc">
+            <button onclick="fetchStudyPlan()">Get Study Plan</button>
+        </div>
+
+        <!-- Study Plan Section -->
+        <div id="study-plan" class="content-box"></div>
+
+        <!-- Schedule Section -->
+        <div id="schedule" class="content-box"></div>
+    </div>
+        
+        <!-- 🔹 Footer Section -->
+    <footer class="footer">
+        <p>© 2025 Smart Study Planner | Designed for Productivity 📖</p>
+    </footer>
+
+    <script src="display1.js"></script>
+</body>
+</html>

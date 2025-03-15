@@ -1,0 +1,166 @@
+/* General Styles */
+body {
+	display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+    font-family: "Arial", sans-serif;
+    background-color: #1E1E2E;
+    color: #FFFFFF;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Container */
+.container {
+	flex:1;
+    max-width: 800px;
+    margin:30px auto;
+    text-align: center;
+    background-color: #2A2A3C;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Headings */
+h1 {
+    font-size: 28px;
+    color: #FFC857;
+}
+h2 {
+    font-size: 22px;
+    color: #A6E3E9;
+}
+
+/* Input Section */
+.input-section {
+    margin: 20px 0;
+}
+
+.input-section label {
+    font-size: 18px;
+}
+
+input {
+	background-color: #ffff80;
+    padding: 8px;
+    font-size: 16px;
+    margin-left: 10px;
+    border-radius: 20px;
+    border: none;
+}
+
+button {
+    background-color: #6DD47E;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    font-size: 16px;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #55B86A;
+}
+
+/* Study Plan & Schedule Sections */
+.content-box {
+    background-color: #3B3B58;
+    padding:80px;
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.study-info p {
+    font-size: 16px;
+}
+
+/* Schedule */
+.day-section {
+    background-color: #2A2A3C;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.schedule-item {
+    background-color: #3B3B58;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: left;
+    margin-top: 10px;
+}
+
+/* Subject Tags */
+.subject {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Hover Effects */
+.schedule-item:hover {
+    background-color: #4A4A6A;
+    transition: background 0.3s ease-in-out;
+}
+
+
+.delete-btn {
+    background-color: #FF6B6B;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s ease-in-out;
+}
+
+.delete-btn:hover {
+    background-color: #D64545;
+}
+
+/* 🔹 Header Styles */
+.header {
+    background-color: #2A2A3C;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-left: 10px; /* Keeps Home on the left */
+}
+
+nav ul li a {
+    color: #A6E3E9;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+nav ul li a:hover {
+    color: #FFC857;
+    text-decoration: underline;
+}
+
+/* 🔹 Footer Styles */
+.footer {
+    background-color: #2A2A3C;
+    color: #A6E3E9;
+    text-align: left;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+}
