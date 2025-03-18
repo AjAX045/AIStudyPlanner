@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ChatBot</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 font-sans h-screen flex flex-col">
+
+    <!-- Chat Header (Fixed at the Top) -->
+    <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+                <i class="fas fa-robot text-white text-xl"></i>
+            </div>
+            <div>
+                <h2 class="font-semibold text-white">ChatBot</h2>
+                <p class="text-sm text-gray-400">Here to help 24/7</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Chat Messages (Scrollable) -->
+    <div id="chatContainer" class="flex-1 overflow-y-auto p-6 bg-gray-900 space-y-6">
+        <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-robot text-white"></i>
+            </div>
+            <div class="max-w-[50%]">
+                <div class="bg-gray-800 rounded-lg p-4 shadow-sm">
+                    <p class="text-gray-200">👋 Welcome! How can I assist you today?</p>
+                </div>
+                <div class="mt-1 text-xs text-gray-500">Now</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Section (Fixed at the Bottom) -->
+    <div class="bg-gray-800 border-t border-gray-700 px-6 py-4 sticky bottom-0 z-10">
+        <div class="max-w-3xl mx-auto flex space-x-4">
+            <div class="flex-1 relative">
+                <input type="text" id="userMessage" placeholder="Ask me anything..." 
+                    class="w-full pl-4 pr-12 py-3 border border-gray-600 rounded-full bg-gray-700 text-gray-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-400"/>
+            </div>
+            <button id="sendMessage" class="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-500 flex items-center space-x-2">
+                <span>Send</span>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript for Chatbot Integration -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const inputField = document.getElementById("userMessage");
+    const sendButton = document.getElementById("sendMessage");
+    const chatContainer = document.getElementById("chatContainer");
+
+    let chatHistory = []; // Store conversation history
+    const userId = "user123"; // This can be dynamically assigned if needed
+
+    sendButton.addEventListener("click", async function () {
+        const userMessage = inputField.value.trim();
+        if (!userMessage) return;
+
+        appendMessage(userMessage, "user");
+
+        // Add user message to chat history
+        chatHistory.push({ role: "user", content: userMessage });
+
+        try {
+            const response = await fetch("http://localhost:8082/api/chatbot/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: userId, message: userMessage, history: chatHistory })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const botMessage = data.response?.trim() || "⚠️ No response from chatbot.";
+
+            appendMessage(botMessage, "bot");
+
+            // Add bot response to chat history
+            chatHistory.push({ role: "bot", content: botMessage });
+
+        } catch (error) {
+            appendMessage("⚠️ Error: Unable to connect to chatbot.", "bot");
+            console.error("Chatbot error:", error);
+        }
+
+        inputField.value = "";
+    });
+
+    function appendMessage(text, sender) {
+        if (!text) return; // Prevent empty messages from breaking UI
+
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("flex", "items-start", "space-x-3");
+        
+        // Only add "justify-end" if sender is "user"
+        if (sender === "user") {
+            messageElement.classList.add("justify-end");
+        }
+
+        messageElement.innerHTML = `
+            <div class="max-w-[50%] ${sender === "user" ? "text-right" : ""}">
+                <div class="${sender === "user" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-200"} rounded-lg p-4 shadow-sm inline-block">
+                    <p>${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                </div>
+                <div class="mt-1 text-xs text-gray-500">${new Date().toLocaleTimeString()}</div>
+            </div>
+            ${sender === "user" ? `
+                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-user text-gray-400"></i>
+                </div>` : `
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-robot text-white"></i>
+                </div>`}
+        `;
+
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+});
+
+
+</script>
+
+
+
+</body>
+</html>

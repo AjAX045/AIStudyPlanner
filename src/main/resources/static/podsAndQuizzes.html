@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Generate Learning Pod</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000" data-border-radius="small"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex flex-col">
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="https://ai-public.creatie.ai/gen_page/logo_placeholder.png" alt="Logo"/>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button class="rounded-full bg-gray-700 text-white px-4 py-2 text-sm font-medium mr-3">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </button>
+                    <button class="rounded-full bg-custom text-white px-4 py-2 text-sm font-medium">
+                        <i class="fas fa-calendar-alt mr-2"></i>Create Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-white mb-4">
+                    Personalized Micro-Learning Experience
+                </h1>
+                <p class="text-xl text-gray-400">
+                    Create engaging learning pods tailored to your needs
+                </p>
+            </div>
+            <div class="bg-gray-800 rounded-lg shadow-lg p-8 max-w-3xl mx-auto">
+                <div class="flex items-center justify-center mb-8">
+                   <img src="https://creatie.ai/ai/api/search-image?query=A friendly 3D cartoon robot teacher or tutor character in a thoughtful pose with a questioning expression, modern minimal style, clean solid background&width=400&height=300&orientation=landscape&removebg=true&flag=320b9be8-b067-47a0-800f-adbfba898759&flag=2f7a2e1c-c18f-4b11-80ae-4538d5d05486&flag=f3cea97b-f48d-4ab6-aa32-6216b3c3f0cb&flag=f5b99d4c-60f1-47d8-8465-f9500f718766&flag=b24e4c71-6c38-44db-abe2-c559e4d03843" alt="Robot Teacher" class="w-64 h-48 object-contain"/>
+                </div>
+                <h2 class="text-2xl font-semibold text-center text-gray-100 mb-8">
+                    Do you want to generate micro-learning pod and give quizzes?
+                </h2>
+                <div class="space-y-6">
+                    <div class="relative">
+                        <label for="subject" class="block text-sm font-medium text-gray-300 mb-2">Select Your Subject</label>
+                        <div class="relative">
+                            <input type="text" id="subject" class="block w-full pl-4 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:ring-custom focus:border-custom" placeholder="Mathematics, Science, History..."/>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>Note: Entered subject should be present in generated schedule otherwise first generate the schedule.
+                    </div>
+                    <button id="generateLearningPodBtn" class="rounded-full w-full bg-custom text-white py-4 text-lg font-semibold hover:bg-custom/90 transition-colors">
+                        <i class="fas fa-magic mr-2"></i>Generate Learning Pod
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="bg-gray-900 border-t border-gray-700">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-400 text-sm">
+                © 2024 Learning Pod Generator. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+<script>
+    // Add event listener to the Generate Learning Pod button
+    document.getElementById('generateLearningPodBtn').addEventListener('click', () => {
+        // Get the subject from the input field
+        const subject = document.getElementById('subject').value;
+
+        // Check if the subject is entered
+        if (!subject) {
+            alert('Please enter a subject!');
+            return;
+        }
+
+        // Prepare the request body
+        const requestData = {
+            subject: subject,
+            userId: "01" // Assuming you already know the user ID
+        };
+
+        // Send POST request to your API
+        fetch('http://localhost:8082/api/daywise/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Check if the response contains the error message for subject not found
+            if (data.error && data.error.includes('Study plan not found for subject')) {
+                alert('Read the Note on the Page!');
+            } 
+            // Check if the response contains the message for schedule already generated
+            else if (data.message && data.message === "Schedule already generated. Fetching today's schedule.") {
+                alert("Pods and quizzes are already generated. Visit today's schedule.");
+                // Redirect to today's schedule
+                window.location.href = 'todayschedule.html';
+            } 
+            else {
+                console.log('Learning Pod generated:', data);
+                alert('Learning Pod generated successfully!');
+                // Redirect to today's schedule after successful generation
+                window.location.href = 'todayschedule.html';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to generate Learning Pod.');
+        });
+    });
+</script>
+
+
+
+</body>
+</html>

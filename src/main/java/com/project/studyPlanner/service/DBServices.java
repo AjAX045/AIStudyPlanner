@@ -33,4 +33,8 @@ public class DBServices {
     public void deleteStudyPlan(Long id) {
         studyPlanRepository.deleteById(id);
     }
+    public Optional<StudyPlan> getStudyPlanBySubject(String subject) {
+        return studyPlanRepository.findBySubject(subject);
+    }
+
 }
