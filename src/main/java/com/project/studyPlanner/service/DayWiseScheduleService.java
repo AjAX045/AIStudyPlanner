@@ -25,57 +25,35 @@ public class DayWiseScheduleService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    /**
-     * ✅ Check if a Day-Wise Schedule exists for the user and subject.
-     */
     public Optional<DayWiseSchedule> findByUserIdAndSubject(String userId, String subject) {
         return dayWiseScheduleRepository.findByUserIdAndSubject(userId, subject);
     }
 
-    /**
-     * ✅ Save the new Day-Wise Schedule if it doesn't exist already.
-     */
     public DayWiseSchedule saveSchedule(DayWiseSchedule schedule) {
         return dayWiseScheduleRepository.save(schedule);
     }
 
-    /**
-     * ✅ Fetch today's schedule based on start date and day-wise mapping.
-     */
     public Map<String, Object> getTodaySchedule(String userId, LocalDate today) {
         logger.info("Fetching today's schedule for user '{}' on date '{}'", userId, today);
-
-        // ✅ Fetch all schedules for the user
         List<DayWiseSchedule> schedules = dayWiseScheduleRepository.findByUserId(userId);
-        
+
         if (schedules.isEmpty()) {
             logger.warn("No schedules found for user '{}'", userId);
             return Map.of("message", "No schedules found for user.");
         }
 
-        logger.info("Total schedules retrieved: {}", schedules.size());
-
-        // ✅ List to hold today's schedules from different subjects
         List<Map<String, Object>> todaySchedules = new ArrayList<>();
 
         for (DayWiseSchedule schedule : schedules) {
             if (schedule.getStartDate() == null) {
-                logger.warn("Skipping schedule ID '{}' as start_date is NULL", schedule.getId());
                 continue;
             }
 
-            logger.info("Processing schedule ID '{}' with start_date '{}'", schedule.getId(), schedule.getStartDate());
-
-            // ✅ Calculate which "Day X" it is based on start_date
             long daysElapsed = ChronoUnit.DAYS.between(schedule.getStartDate(), today);
-            String dayKey = "Day " + (daysElapsed + 1); // Example: "Day 1", "Day 2", etc.
-
-            logger.info("Looking for key '{}' in JSON data", dayKey);
+            String dayKey = "Day " + (daysElapsed + 1);
 
             try {
-                // ✅ Parse JSON from database
                 JsonNode scheduleJson = objectMapper.readTree(schedule.getDayWiseData());
-
                 if (scheduleJson.has(dayKey)) {
                     JsonNode todaySchedule = scheduleJson.get(dayKey);
                     JsonNode pods = todaySchedule.get("pods");
@@ -85,7 +63,6 @@ public class DayWiseScheduleService {
 
                     if (pods != null && pods.isArray()) {
                         for (JsonNode pod : pods) {
-                            // ✅ Extract Key Concepts
                             List<String> keyConcepts = new ArrayList<>();
                             if (pod.has("key_concepts") && pod.get("key_concepts").isArray()) {
                                 for (JsonNode concept : pod.get("key_concepts")) {
@@ -93,7 +70,6 @@ public class DayWiseScheduleService {
                                 }
                             }
 
-                            // ✅ Extract Quiz
                             if (pod.has("quiz") && pod.get("quiz").isArray()) {
                                 for (JsonNode quizItem : pod.get("quiz")) {
                                     Map<String, Object> quizMap = new HashMap<>();
@@ -108,35 +84,72 @@ public class DayWiseScheduleService {
                                 }
                             }
 
-                            // ✅ Store each learning pod
+                            List<Map<String, String>> resources = new ArrayList<>();
+                            if (pod.has("resources") && pod.get("resources").isArray()) {
+                                for (JsonNode resource : pod.get("resources")) {
+                                    Map<String, String> resourceData = new HashMap<>();
+                                    resourceData.put("title", resource.has("title") ? resource.get("title").asText() : "Resource");
+                                    resourceData.put("link", resource.has("link") ? resource.get("link").asText() : "#");
+                                    resources.add(resourceData);
+                                }
+                            }
+
                             Map<String, Object> podData = new HashMap<>();
                             podData.put("title", pod.get("title").asText());
                             podData.put("key_concepts", keyConcepts);
+                            podData.put("resources", resources);
                             podList.add(podData);
                         }
                     }
 
-                    // ✅ Structure the final response
                     Map<String, Object> scheduleData = new HashMap<>();
                     scheduleData.put("topic", schedule.getSubject());
                     scheduleData.put("micro_learning_pod", podList);
                     scheduleData.put("quiz", quizList);
+                    scheduleData.put("resources", podList.stream().map(pod -> pod.get("resources")).toList());
 
                     todaySchedules.add(scheduleData);
-                } else {
-                    logger.warn("No data found for '{}' in schedule ID '{}'", dayKey, schedule.getId());
                 }
             } catch (JsonProcessingException e) {
                 logger.error("Error parsing JSON for schedule ID '{}': {}", schedule.getId(), e.getMessage());
             }
         }
 
-        // ✅ If no schedules were found for today
         if (todaySchedules.isEmpty()) {
-            logger.warn("No schedule found for today for user '{}'", userId);
             return Map.of("message", "No schedule found for today.");
         }
 
         return Map.of("todaySchedule", todaySchedules);
+    }
+
+    public Map<String, Object> getPodDetails(String userId, String subject, String podTitle) {
+        Optional<DayWiseSchedule> scheduleOpt = dayWiseScheduleRepository.findByUserIdAndSubject(userId, subject);
+        if (scheduleOpt.isEmpty()) {
+            return Map.of("message", "No schedule found for this subject.");
+        }
+
+        DayWiseSchedule schedule = scheduleOpt.get();
+        try {
+            JsonNode scheduleJson = objectMapper.readTree(schedule.getDayWiseData());
+            for (JsonNode dayNode : scheduleJson) {
+                for (JsonNode pod : dayNode.get("pods")) {
+                    if (pod.get("title").asText().equalsIgnoreCase(podTitle)) {
+                        List<Map<String, String>> resources = new ArrayList<>();
+                        if (pod.has("resources")) {
+                            for (JsonNode res : pod.get("resources")) {
+                                resources.add(Map.of(
+                                    "title", res.get("title").asText(),
+                                    "link", res.get("link").asText()
+                                ));
+                            }
+                        }
+                        return Map.of("podTitle", podTitle, "resources", resources);
+                    }
+                }
+            }
+        } catch (JsonProcessingException e) {
+            return Map.of("error", "Error parsing JSON data.");
+        }
+        return Map.of("message", "Pod not found.");
     }
 }
